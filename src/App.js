@@ -74,7 +74,23 @@ const App = () => {
           <Header numTodos={items.length} />
           <TodoList
             tasks={items}
-            onEdit={console.log}
+            onEdit={(id, newName) => {
+              fetch(`https://dev.teledirectasia.com:3092/tasks/${id}`, {
+                method: "PUT",
+                headers: {
+                  Authorization: localStorage.getItem("token"),
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  name: newName,
+                }),
+              })
+                .then((res) => res.json())
+                .then((result) => {
+                  console.log(result);
+                  setLastRender(Date.now());
+                }, console.error);
+            }}
             onToggle={() => setLastRender(Date.now())}
             onDelete={(id) => {
               fetch(`https://dev.teledirectasia.com:3092/tasks/${id}`, {
@@ -200,46 +216,85 @@ const TodoList = (props) => {
   return <div className="list-wrapper">{todos}</div>;
 };
 
-const Todo = (props) => (
-  <div className="list-item">
-    <label className="checkbox">
-      <input type="checkbox" checked={props.completed} onChange={() => {
-        fetch(`https://dev.teledirectasia.com:3092/tasks/${props.id}`, {
-          method: "PUT",
-          headers: {
-            Authorization: localStorage.getItem("token"),
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            completed: !props.completed,
-          }),
-        })
-          .then((res) => res.json())
-          .then((result) => {
-            console.log(result);
-            props.onToggle();
-          }, console.error);
-      }}/>
-      {!props.completed && props.name}
-      {props.completed && <del>{props.name}</del>}
-    </label>
-    <button
-      onClick={() => {
-        props.onEdit(props.id);
-      }}
-    >
-      Edit
-    </button>
+const Todo = (props) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentValue, setCurrentValue] = useState(props.name);
 
-    <button
-      className="delete is-pulled-right"
-      onClick={() => {
-        props.onDelete(props.id);
-      }}
-    >
-      x
-    </button>
-  </div>
-);
+  if (isEditing) {
+    return (
+      <div className="list-item">
+        <form>
+          <input
+            type="text"
+            className="input"
+            placeholder="Enter Item"
+            value={currentValue}
+            onChange={(e) => setCurrentValue(e.target.value)}
+          />
+          <button
+            className="button"
+            onClick={(e) => {
+              e.preventDefault();
+              props.onEdit(props.id, currentValue);
+              setIsEditing(false);
+            }}
+          >
+            Save
+          </button>
+          <button
+            className="button"
+            onClick={(e) => {
+              e.preventDefault();
+              setIsEditing(false);
+            }}
+          >
+            Cancel
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <div className="list-item">
+      <label className="checkbox">
+        <input
+          type="checkbox"
+          checked={props.completed}
+          onChange={() => {
+            fetch(`https://dev.teledirectasia.com:3092/tasks/${props.id}`, {
+              method: "PUT",
+              headers: {
+                Authorization: localStorage.getItem("token"),
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                completed: !props.completed,
+              }),
+            })
+              .then((res) => res.json())
+              .then((result) => {
+                console.log(result);
+                props.onToggle();
+              }, console.error);
+          }}
+        />
+        {!props.completed && props.name}
+        {props.completed && <del>{props.name}</del>}
+      </label>
+      <button onClick={() => setIsEditing(true)}>
+        Edit
+      </button>
+
+      <button
+        onClick={() => {
+          props.onDelete(props.id);
+        }}
+      >
+        Delete
+      </button>
+    </div>
+  );
+};
 
 export default App;
