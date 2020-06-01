@@ -61,6 +61,39 @@ const App = () => {
     return <div>Error: {error.message}</div>;
   } else if (!isLoaded) {
     return <div>Loading...</div>;
+  } else if (items.length === 0) {
+    return (
+      <section className="hero is-primary is-fullheight">
+        <div className="hero-body">
+          <div className="container">
+            <div className="columns is-centered">
+              <div className="column is-5-tablet is-4-desktop is-3-widescreen">
+                <div className="box">
+                  <div className="card frame"></div>
+                  <div className="has-text-centered">You have no task.</div>
+                  <div className="panel-block">
+                    <button
+                      className="button is-primary is-fullwidth"
+                      onClick={() => setIsActive(true)}
+                    >
+                      + New Task
+                    </button>
+                  </div>
+                  <SubmitForm
+                    modalClass={isActive ? "modal is-active" : "modal"}
+                    onFormSubmit={(task) => {
+                      setItems([...items, task]);
+                      setLastRender(Date.now());
+                    }}
+                    onDismiss={() => setIsActive(false)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
   } else {
     return (
       <section className="hero is-primary is-fullheight">
@@ -99,7 +132,10 @@ const App = () => {
                     </div>
 
                     <div className="panel-block">
-                      <button className="button is-primary is-fullwidth" onClick={() => setIsActive(true)}>
+                      <button
+                        className="button is-primary is-fullwidth"
+                        onClick={() => setIsActive(true)}
+                      >
                         + New Task
                       </button>
                     </div>
@@ -149,7 +185,7 @@ const App = () => {
                       }}
                     />
                     <SubmitForm
-                      modalClass={isActive ? 'modal is-active' : 'modal'}
+                      modalClass={isActive ? "modal is-active" : "modal"}
                       onFormSubmit={(task) => {
                         setItems([...items, task]);
                         setLastRender(Date.now());
@@ -262,10 +298,7 @@ class SubmitForm extends Component {
   render() {
     return (
       <div className={this.props.modalClass}>
-        <div
-          className="modal-background"
-          onClick={this.props.onDismiss}
-        ></div>
+        <div className="modal-background" onClick={this.props.onDismiss}></div>
         <div className="modal-content">
           <form onSubmit={this.handleSubmit}>
             <input
