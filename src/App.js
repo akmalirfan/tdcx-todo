@@ -72,7 +72,9 @@ const App = () => {
           >
             Log out
           </button>
+
           <Header completed={items.filter(task => task.completed).length} numTodos={items.length} />
+          <LatestCreated tasks={items} />
 
           <input
             type="text"
@@ -83,7 +85,7 @@ const App = () => {
           />
 
           <TodoList
-            tasks={items.filter(task => task.name.toLowerCase().includes(query.toLowerCase()))}
+            tasks={items.filter(task => (task.name || '').toLowerCase().includes(query.toLowerCase()))}
             onEdit={(id, newName) => {
               fetch(`https://dev.teledirectasia.com:3092/tasks/${id}`, {
                 method: "PUT",
@@ -208,6 +210,22 @@ const Header = (props) => {
     </div>
   );
 };
+
+const LatestCreated = props => {
+  const latest = props.tasks.slice(-3).reverse();
+  const latestList = latest.map(todo => (
+    <li>{todo.name}</li>
+  ))
+
+  return (
+    <div className="card-header">
+      <h1 className="card-header-title header">
+        Latest Created
+      </h1>
+      <ul>{latestList}</ul>
+    </div>
+  );
+}
 
 const TodoList = (props) => {
   const todos = props.tasks.map((todo) => {
