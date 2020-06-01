@@ -8,6 +8,7 @@ const App = () => {
   const [token, setToken] = useState("");
   const [lastRender, setLastRender] = useState(0);
   const [query, setQuery] = useState("");
+  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem("token")) {
@@ -62,75 +63,106 @@ const App = () => {
     return <div>Loading...</div>;
   } else {
     return (
-      <div className="wrapper">
-        <div className="card frame">
-          <button
-            onClick={() => {
-              localStorage.clear();
-              setToken("");
-            }}
-          >
-            Log out
-          </button>
+      <section className="hero is-primary is-fullheight">
+        <div className="hero-body">
+          <div className="container">
+            <div className="columns is-centered">
+              <div className="column is-5-tablet is-4-desktop is-3-widescreen">
+                <div className="box">
+                  <div className="card frame">
+                    {localStorage.getItem("name")}
+                    <button
+                      onClick={() => {
+                        localStorage.clear();
+                        setToken("");
+                      }}
+                    >
+                      Log out
+                    </button>
 
-          <Header
-            completed={items.filter((task) => task.completed).length}
-            numTodos={items.length}
-          />
-          <LatestCreated tasks={items} />
+                    <Header
+                      completed={items.filter((task) => task.completed).length}
+                      numTodos={items.length}
+                    />
+                    <LatestCreated tasks={items} />
 
-          <input
-            type="text"
-            className="input"
-            placeholder="Search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+                    <div className="panel-block">
+                      <p className="control">
+                        <input
+                          type="text"
+                          className="input is-primary"
+                          placeholder="Search by task name"
+                          value={query}
+                          onChange={(e) => setQuery(e.target.value)}
+                        />
+                      </p>
+                    </div>
 
-          <TodoList
-            tasks={items.filter((task) =>
-              (task.name || "").toLowerCase().includes(query.toLowerCase())
-            )}
-            onEdit={(id, newName) => {
-              fetch(`https://dev.teledirectasia.com:3092/tasks/${id}`, {
-                method: "PUT",
-                headers: {
-                  Authorization: localStorage.getItem("token"),
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  name: newName,
-                }),
-              })
-                .then((res) => res.json())
-                .then((result) => {
-                  console.log(result);
-                  setLastRender(Date.now());
-                }, console.error);
-            }}
-            onToggle={() => setLastRender(Date.now())}
-            onDelete={(id) => {
-              fetch(`https://dev.teledirectasia.com:3092/tasks/${id}`, {
-                method: "DELETE",
-                headers: {
-                  Authorization: localStorage.getItem("token"),
-                },
-              })
-                .then((res) => res.json())
-                .then((result) => {
-                  console.log(result);
-                  setLastRender(Date.now());
-                }, console.error);
-            }}
-          />
-          <SubmitForm
-            onFormSubmit={(task) => {
-              setItems([...items, task]);
-              setLastRender(Date.now());
-            }}
-          />
+                    <div className="panel-block">
+                      <button className="button is-primary is-fullwidth" onClick={() => setIsActive(true)}>
+                        + New Task
+                      </button>
+                    </div>
+
+                    <TodoList
+                      tasks={items.filter((task) =>
+                        (task.name || "")
+                          .toLowerCase()
+                          .includes(query.toLowerCase())
+                      )}
+                      onEdit={(id, newName) => {
+                        fetch(
+                          `https://dev.teledirectasia.com:3092/tasks/${id}`,
+                          {
+                            method: "PUT",
+                            headers: {
+                              Authorization: localStorage.getItem("token"),
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              name: newName,
+                            }),
+                          }
+                        )
+                          .then((res) => res.json())
+                          .then((result) => {
+                            console.log(result);
+                            setLastRender(Date.now());
+                          }, console.error);
+                      }}
+                      onToggle={() => setLastRender(Date.now())}
+                      onDelete={(id) => {
+                        fetch(
+                          `https://dev.teledirectasia.com:3092/tasks/${id}`,
+                          {
+                            method: "DELETE",
+                            headers: {
+                              Authorization: localStorage.getItem("token"),
+                            },
+                          }
+                        )
+                          .then((res) => res.json())
+                          .then((result) => {
+                            console.log(result);
+                            setLastRender(Date.now());
+                          }, console.error);
+                      }}
+                    />
+                    <SubmitForm
+                      modalClass={isActive ? 'modal is-active' : 'modal'}
+                      onFormSubmit={(task) => {
+                        setItems([...items, task]);
+                        setLastRender(Date.now());
+                      }}
+                      onDismiss={() => setIsActive(false)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
     );
   }
 };
@@ -140,26 +172,26 @@ const LoginForm = (props) => {
   const [apiKey, setApiKey] = useState("");
 
   return (
-    <section class="hero is-primary is-fullheight">
-      <div class="hero-body">
-        <div class="container">
-          <div class="columns is-centered">
-            <div class="column is-5-tablet is-4-desktop is-3-widescreen">
+    <section className="hero is-primary is-fullheight">
+      <div className="hero-body">
+        <div className="container">
+          <div className="columns is-centered">
+            <div className="column is-5-tablet is-4-desktop is-3-widescreen">
               <form
-                class="box"
+                className="box"
                 onSubmit={(e) => {
                   e.preventDefault();
                   props.onSubmit(nameValue, apiKey);
                 }}
               >
-                <h2 class="subtitle" style={{ color: "darkgray" }}>
+                <h2 className="subtitle" style={{ color: "darkgray" }}>
                   Login
                 </h2>
 
-                <div class="field">
-                  <div class="control">
+                <div className="field">
+                  <div className="control">
                     <input
-                      class="input"
+                      className="input"
                       name="apiKey"
                       type="password"
                       placeholder="Id"
@@ -169,10 +201,10 @@ const LoginForm = (props) => {
                   </div>
                 </div>
 
-                <div class="field">
-                  <div class="controlt">
+                <div className="field">
+                  <div className="controlt">
                     <input
-                      class="input"
+                      className="input"
                       name="name"
                       type="text"
                       placeholder="Name"
@@ -182,9 +214,9 @@ const LoginForm = (props) => {
                   </div>
                 </div>
 
-                <div class="field">
+                <div className="field">
                   <input
-                    class="button is-primary is-fullwidth"
+                    className="button is-primary is-fullwidth"
                     name="submit"
                     type="submit"
                     value="Login"
@@ -224,20 +256,31 @@ class SubmitForm extends Component {
         });
       }, console.error);
     this.setState({ term: "" });
+    this.props.onDismiss();
   };
 
   render() {
     return (
-      <form onSubmit={this.handleSubmit}>
-        <input
-          type="text"
-          className="input"
-          placeholder="Enter Item"
-          value={this.state.term}
-          onChange={(e) => this.setState({ term: e.target.value })}
-        />
-        <button className="button">Submit</button>
-      </form>
+      <div className={this.props.modalClass}>
+        <div
+          className="modal-background"
+          onClick={this.props.onDismiss}
+        ></div>
+        <div className="modal-content">
+          <form onSubmit={this.handleSubmit}>
+            <input
+              type="text"
+              className="input"
+              placeholder="Task Name"
+              value={this.state.term}
+              onChange={(e) => this.setState({ term: e.target.value })}
+            />
+            <button className="button is-primary is-fullwidth">
+              + New Task
+            </button>
+          </form>
+        </div>
+      </div>
     );
   }
 }
@@ -264,7 +307,7 @@ const LatestCreated = (props) => {
   return (
     <div className="card-header">
       <h1 className="card-header-title header">Latest Created</h1>
-      <ul>{latestList}</ul>
+      <ul className="list-item">{latestList}</ul>
     </div>
   );
 };
@@ -355,12 +398,11 @@ const Todo = (props) => {
       <button onClick={() => setIsEditing(true)}>Edit</button>
 
       <button
+        className="delete"
         onClick={() => {
           props.onDelete(props.id);
         }}
-      >
-        Delete
-      </button>
+      />
     </div>
   );
 };
