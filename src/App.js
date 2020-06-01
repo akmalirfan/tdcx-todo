@@ -1,5 +1,5 @@
 import React, { Component, useState, useEffect } from "react";
-import "./App.css";
+import "./bulma.min.css";
 
 const App = () => {
   const [error, setError] = useState(null);
@@ -7,7 +7,7 @@ const App = () => {
   const [items, setItems] = useState([]);
   const [token, setToken] = useState("");
   const [lastRender, setLastRender] = useState(0);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     if (localStorage.getItem("token")) {
@@ -73,7 +73,10 @@ const App = () => {
             Log out
           </button>
 
-          <Header completed={items.filter(task => task.completed).length} numTodos={items.length} />
+          <Header
+            completed={items.filter((task) => task.completed).length}
+            numTodos={items.length}
+          />
           <LatestCreated tasks={items} />
 
           <input
@@ -85,7 +88,9 @@ const App = () => {
           />
 
           <TodoList
-            tasks={items.filter(task => (task.name || '').toLowerCase().includes(query.toLowerCase()))}
+            tasks={items.filter((task) =>
+              (task.name || "").toLowerCase().includes(query.toLowerCase())
+            )}
             onEdit={(id, newName) => {
               fetch(`https://dev.teledirectasia.com:3092/tasks/${id}`, {
                 method: "PUT",
@@ -135,26 +140,62 @@ const LoginForm = (props) => {
   const [apiKey, setApiKey] = useState("");
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        props.onSubmit(nameValue, apiKey);
-      }}
-    >
-      <input
-        name="name"
-        type="text"
-        value={nameValue}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <input
-        name="apiKey"
-        type="password"
-        value={apiKey}
-        onChange={(e) => setApiKey(e.target.value)}
-      />
-      <input name="submit" type="submit" />
-    </form>
+    <section class="hero is-primary is-fullheight">
+      <div class="hero-body">
+        <div class="container">
+          <div class="columns is-centered">
+            <div class="column is-5-tablet is-4-desktop is-3-widescreen">
+              <form
+                class="box"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  props.onSubmit(nameValue, apiKey);
+                }}
+              >
+                <h2 class="subtitle" style={{ color: "darkgray" }}>
+                  Login
+                </h2>
+
+                <div class="field">
+                  <div class="control">
+                    <input
+                      class="input"
+                      name="apiKey"
+                      type="password"
+                      placeholder="Id"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div class="field">
+                  <div class="controlt">
+                    <input
+                      class="input"
+                      name="name"
+                      type="text"
+                      placeholder="Name"
+                      value={nameValue}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div class="field">
+                  <input
+                    class="button is-primary is-fullwidth"
+                    name="submit"
+                    type="submit"
+                    value="Login"
+                  />
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 };
 
@@ -211,24 +252,22 @@ const Header = (props) => {
   );
 };
 
-const LatestCreated = props => {
+const LatestCreated = (props) => {
   const latest = props.tasks.slice(-3).reverse();
-  const latestList = latest.map(todo => (
+  const latestList = latest.map((todo) => (
     <li key={todo._id}>
       {!todo.completed && todo.name}
       {todo.completed && <del>{todo.name}</del>}
     </li>
-  ))
+  ));
 
   return (
     <div className="card-header">
-      <h1 className="card-header-title header">
-        Latest Created
-      </h1>
+      <h1 className="card-header-title header">Latest Created</h1>
       <ul>{latestList}</ul>
     </div>
   );
-}
+};
 
 const TodoList = (props) => {
   const todos = props.tasks.map((todo) => {
@@ -313,9 +352,7 @@ const Todo = (props) => {
         {!props.completed && props.name}
         {props.completed && <del>{props.name}</del>}
       </label>
-      <button onClick={() => setIsEditing(true)}>
-        Edit
-      </button>
+      <button onClick={() => setIsEditing(true)}>Edit</button>
 
       <button
         onClick={() => {
