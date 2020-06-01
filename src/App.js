@@ -75,6 +75,7 @@ const App = () => {
           <TodoList
             tasks={items}
             onEdit={console.log}
+            onToggle={() => setLastRender(Date.now())}
             onDelete={(id) => {
               fetch(`https://dev.teledirectasia.com:3092/tasks/${id}`, {
                 method: "DELETE",
@@ -190,6 +191,7 @@ const TodoList = (props) => {
         key={todo._id}
         id={todo._id}
         onEdit={props.onEdit}
+        onToggle={props.onToggle}
         onDelete={props.onDelete}
         completed={todo.completed}
       />
@@ -200,8 +202,27 @@ const TodoList = (props) => {
 
 const Todo = (props) => (
   <div className="list-item">
-    {!props.completed && props.name}
-    {props.completed && <del>{props.name}</del>}
+    <label className="checkbox">
+      <input type="checkbox" checked={props.completed} onChange={() => {
+        fetch(`https://dev.teledirectasia.com:3092/tasks/${props.id}`, {
+          method: "PUT",
+          headers: {
+            Authorization: localStorage.getItem("token"),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            completed: !props.completed,
+          }),
+        })
+          .then((res) => res.json())
+          .then((result) => {
+            console.log(result);
+            props.onToggle();
+          }, console.error);
+      }}/>
+      {!props.completed && props.name}
+      {props.completed && <del>{props.name}</del>}
+    </label>
     <button
       onClick={() => {
         props.onEdit(props.id);
