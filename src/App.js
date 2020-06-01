@@ -5,25 +5,55 @@ const App = () => {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [items, setItems] = useState([]);
+  const [token, setToken] = useState("");
+  const [lastRender, setLastRender] = useState(0);
 
   useEffect(() => {
-    fetch("https://dev.teledirectasia.com:3092/tasks", {
-      headers: {
-        Authorization: "e232f6d9706cda338431c633",
-      },
-    })
-      .then((res) => res.json())
-      .then(
-        (result) => {
-          setIsLoaded(true);
-          setItems(result.tasks);
+    if (localStorage.getItem("token")) {
+      fetch("https://dev.teledirectasia.com:3092/tasks", {
+        headers: {
+          Authorization: localStorage.getItem("token"),
         },
-        (error) => {
-          setIsLoaded(true);
-          setError(error);
-        }
-      );
-  });
+      })
+        .then((res) => res.json())
+        .then(
+          (result) => {
+            setIsLoaded(true);
+            setItems(result.tasks);
+          },
+          (error) => {
+            setIsLoaded(true);
+            setError(error);
+          }
+        );
+    }
+  }, [token, lastRender]);
+
+  if (!localStorage.getItem("token")) {
+    return (
+      <LoginForm
+        onSubmit={(name, apiKey) => {
+          // Get token
+          fetch("https://dev.teledirectasia.com:3092/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name,
+              apiKey,
+            }),
+          })
+            .then((res) => res.json())
+            .then((result) => {
+              localStorage.setItem("name", result.token.name);
+              localStorage.setItem("token", result.token.token);
+              setToken(result.token.token);
+            }, console.error);
+        }}
+      />
+    );
+  }
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -33,6 +63,14 @@ const App = () => {
     return (
       <div className="wrapper">
         <div className="card frame">
+          <button
+            onClick={() => {
+              localStorage.clear();
+              setToken("");
+            }}
+          >
+            Log out
+          </button>
           <Header numTodos={items.length} />
           <TodoList
             tasks={items}
@@ -41,24 +79,54 @@ const App = () => {
               fetch(`https://dev.teledirectasia.com:3092/tasks/${id}`, {
                 method: "DELETE",
                 headers: {
-                  Authorization: "e232f6d9706cda338431c633"
+                  Authorization: localStorage.getItem("token"),
                 },
               })
                 .then((res) => res.json())
-                .then(console.log, console.error);
-
-              setItems(items);
+                .then((result) => {
+                  console.log(result);
+                  setLastRender(Date.now());
+                }, console.error);
             }}
           />
           <SubmitForm
             onFormSubmit={(task) => {
               setItems([...items, task]);
+              setLastRender(Date.now());
             }}
           />
         </div>
       </div>
     );
   }
+};
+
+const LoginForm = (props) => {
+  const [nameValue, setName] = useState("");
+  const [apiKey, setApiKey] = useState("");
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        props.onSubmit(nameValue, apiKey);
+      }}
+    >
+      <input
+        name="name"
+        type="text"
+        value={nameValue}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <input
+        name="apiKey"
+        type="password"
+        value={apiKey}
+        onChange={(e) => setApiKey(e.target.value)}
+      />
+      <input name="submit" type="submit" />
+    </form>
+  );
 };
 
 class SubmitForm extends Component {
@@ -71,7 +139,7 @@ class SubmitForm extends Component {
     fetch("https://dev.teledirectasia.com:3092/tasks", {
       method: "POST",
       headers: {
-        Authorization: "e232f6d9706cda338431c633",
+        Authorization: localStorage.getItem("token"),
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -117,7 +185,14 @@ const Header = (props) => {
 const TodoList = (props) => {
   const todos = props.tasks.map((todo) => {
     return (
-      <Todo name={todo.name} key={todo._id} id={todo._id} onEdit={props.onEdit} onDelete={props.onDelete} completed={todo.completed} />
+      <Todo
+        name={todo.name}
+        key={todo._id}
+        id={todo._id}
+        onEdit={props.onEdit}
+        onDelete={props.onDelete}
+        completed={todo.completed}
+      />
     );
   });
   return <div className="list-wrapper">{todos}</div>;
