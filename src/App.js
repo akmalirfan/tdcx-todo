@@ -214,7 +214,10 @@ const Header = (props) => {
 const LatestCreated = props => {
   const latest = props.tasks.slice(-3).reverse();
   const latestList = latest.map(todo => (
-    <li>{todo.name}</li>
+    <li>
+      {!todo.completed && todo.name}
+      {todo.completed && <del>{todo.name}</del>}
+    </li>
   ))
 
   return (
