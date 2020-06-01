@@ -7,6 +7,7 @@ const App = () => {
   const [items, setItems] = useState([]);
   const [token, setToken] = useState("");
   const [lastRender, setLastRender] = useState(0);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     if (localStorage.getItem("token")) {
@@ -72,8 +73,17 @@ const App = () => {
             Log out
           </button>
           <Header numTodos={items.length} />
+
+          <input
+            type="text"
+            className="input"
+            placeholder="Search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+
           <TodoList
-            tasks={items}
+            tasks={items.filter(task => task.name.toLowerCase().includes(query.toLowerCase()))}
             onEdit={(id, newName) => {
               fetch(`https://dev.teledirectasia.com:3092/tasks/${id}`, {
                 method: "PUT",
