@@ -72,7 +72,7 @@ const App = () => {
           >
             Log out
           </button>
-          <Header numTodos={items.length} />
+          <Header completed={items.filter(task => task.completed).length} numTodos={items.length} />
 
           <input
             type="text"
@@ -203,7 +203,7 @@ const Header = (props) => {
   return (
     <div className="card-header">
       <h1 className="card-header-title header">
-        You have {props.numTodos} Todos
+        Task Completed {props.completed}/{props.numTodos}
       </h1>
     </div>
   );
